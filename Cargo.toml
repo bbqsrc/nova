@@ -1,0 +1,13 @@
+[package]
+name = "nova"
+description = "Newtype macros for commonly reused types in Rust."
+version = "0.1.0"
+edition = "2018"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/bbqsrc/nova"
+
+[dependencies]
+uuid = { version = "0.8", optional = true }
+
+[dev-dependencies]
+uuid = { version = "0.8", features = ["serde", "v4"] }
