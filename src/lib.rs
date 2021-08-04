@@ -267,6 +267,174 @@ macro_rules! isize {
 }
 
 #[macro_export]
+/// Creates a `NonZeroU8` newtype.
+macro_rules! nonzero_u8 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU8 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU8 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU8 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroU16` newtype.
+macro_rules! nonzero_u16 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU16 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU16 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU16 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroU32` newtype.
+macro_rules! nonzero_u32 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU32 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU32 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU32 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroU64` newtype.
+macro_rules! nonzero_u64 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU64 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU64 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU64 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroU128` newtype.
+macro_rules! nonzero_u128 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU128 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU128 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroU128 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroUsize` newtype.
+macro_rules! nonzero_usize {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroUsize => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroUsize => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroUsize => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroI8` newtype.
+macro_rules! nonzero_i8 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI8 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI8 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI8 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroI16` newtype.
+macro_rules! nonzero_i16 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI16 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI16 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI16 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroI32` newtype.
+macro_rules! nonzero_i32 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI32 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI32 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI32 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroI64` newtype.
+macro_rules! nonzero_i64 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI64 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI64 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI64 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroI128` newtype.
+macro_rules! nonzero_i128 {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI128 => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI128 => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroI128 => $name);
+    };
+}
+
+#[macro_export]
+/// Creates a `NonZeroIsize` newtype.
+macro_rules! nonzero_isize {
+    (pub $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroIsize => pub $name);
+    };
+    (pub ($($vis:tt)+) $name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroIsize => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype_copy!(::core::num::NonZeroIsize => $name);
+    };
+}
+
+#[macro_export]
 #[cfg(feature = "heapless")]
 /// Creates a [`Vec<u8>`][Vec] newtype. With <span class="stab portability"><code>heapless</code></span>
 /// feature enabled, creates a [`heapless::Vec<u8, N>`][::heapless::Vec] newtype.
