@@ -1,9 +1,12 @@
+#![doc = include_str!("README.md")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "alloc")]
-extern crate alloc;
+#[doc(hidden)]
+pub extern crate alloc;
 
 #[macro_export]
+/// Create a clonable newtype for a given type and name.
 macro_rules! newtype {
     (@__impl $ty:path => $name:ident) => {
         impl core::ops::Deref for $name {
@@ -42,6 +45,7 @@ macro_rules! newtype {
 }
 
 #[macro_export]
+/// Create a copiable newtype for a given type and name.
 macro_rules! newtype_copy {
     (@__impl $ty:path => $name:ident) => {
         impl core::ops::Deref for $name {
@@ -81,6 +85,7 @@ macro_rules! newtype_copy {
 
 #[cfg(feature = "uuid")]
 #[macro_export]
+/// Creates a [`uuid::Uuid`][::uuid::Uuid] newtype.
 macro_rules! uuid {
     (pub $name:ident) => {
         $crate::newtype_copy!(::uuid::Uuid => pub $name);
@@ -94,6 +99,7 @@ macro_rules! uuid {
 }
 
 #[macro_export]
+/// Creates a `u8` newtype.
 macro_rules! u8 {
     (pub $name:ident) => {
         $crate::newtype_copy!(u8 => pub $name);
@@ -107,6 +113,7 @@ macro_rules! u8 {
 }
 
 #[macro_export]
+/// Creates a `u16` newtype.
 macro_rules! u16 {
     (pub $name:ident) => {
         $crate::newtype_copy!(u16 => pub $name);
@@ -120,6 +127,7 @@ macro_rules! u16 {
 }
 
 #[macro_export]
+/// Creates a `u32` newtype.
 macro_rules! u32 {
     (pub $name:ident) => {
         $crate::newtype_copy!(u32 => pub $name);
@@ -133,6 +141,7 @@ macro_rules! u32 {
 }
 
 #[macro_export]
+/// Creates a `u64` newtype.
 macro_rules! u64 {
     (pub $name:ident) => {
         $crate::newtype_copy!(u64 => pub $name);
@@ -146,6 +155,7 @@ macro_rules! u64 {
 }
 
 #[macro_export]
+/// Creates a `u128` newtype.
 macro_rules! u128 {
     (pub $name:ident) => {
         $crate::newtype_copy!(u128 => pub $name);
@@ -159,6 +169,7 @@ macro_rules! u128 {
 }
 
 #[macro_export]
+/// Creates a `usize` newtype.
 macro_rules! usize {
     (pub $name:ident) => {
         $crate::newtype_copy!(usize => pub $name);
@@ -172,6 +183,7 @@ macro_rules! usize {
 }
 
 #[macro_export]
+/// Creates an `i8` newtype.
 macro_rules! i8 {
     (pub $name:ident) => {
         $crate::newtype_copy!(i8 => pub $name);
@@ -185,6 +197,7 @@ macro_rules! i8 {
 }
 
 #[macro_export]
+/// Creates an `i16` newtype.
 macro_rules! i16 {
     (pub $name:ident) => {
         $crate::newtype_copy!(i16 => pub $name);
@@ -198,6 +211,7 @@ macro_rules! i16 {
 }
 
 #[macro_export]
+/// Creates an `i32` newtype.
 macro_rules! i32 {
     (pub $name:ident) => {
         $crate::newtype_copy!(i32 => pub $name);
@@ -211,6 +225,7 @@ macro_rules! i32 {
 }
 
 #[macro_export]
+/// Creates an `i64` newtype.
 macro_rules! i64 {
     (pub $name:ident) => {
         $crate::newtype_copy!(i64 => pub $name);
@@ -224,6 +239,7 @@ macro_rules! i64 {
 }
 
 #[macro_export]
+/// Creates an `i128` newtype.
 macro_rules! i128 {
     (pub $name:ident) => {
         $crate::newtype_copy!(i128 => pub $name);
@@ -237,6 +253,7 @@ macro_rules! i128 {
 }
 
 #[macro_export]
+/// Creates an `isize` newtype.
 macro_rules! isize {
     (pub $name:ident) => {
         $crate::newtype_copy!(isize => pub $name);
@@ -251,6 +268,20 @@ macro_rules! isize {
 
 #[macro_export]
 #[cfg(feature = "heapless")]
+/// Creates a [`Vec<u8>`][Vec] newtype. With <span class="stab portability"><code>heapless</code></span>
+/// feature enabled, creates a [`heapless::Vec<u8, N>`][::heapless::Vec] newtype.
+///
+/// ## Usage
+///
+/// With [`heapless::Vec`][::heapless::Vec], the size needs to be specified.
+/// ```
+/// nova::bytevec!(MyStringType, 128);
+/// ```
+///
+/// With an ordinary vector, no requirement for a size.
+/// ```
+/// nova::bytevec!(MyStringType);
+/// ```
 macro_rules! bytevec {
     (pub $name:ident, $n:tt) => {
         $crate::newtype!(::heapless::Vec<u8, $n> => pub $name);
@@ -265,6 +296,20 @@ macro_rules! bytevec {
 
 #[macro_export]
 #[cfg(all(feature = "alloc", not(feature = "heapless")))]
+/// Creates a [`Vec<u8>`][Vec] newtype. With <span class="stab portability"><code>heapless</code></span>
+/// feature enabled, creates a [`heapless::Vec<u8, N>`][::heapless::Vec] newtype.
+///
+/// ## Usage
+///
+/// With [`heapless::Vec`][::heapless::Vec], the size needs to be specified.
+/// ```
+/// nova::bytevec!(MyStringType, 128);
+/// ```
+///
+/// With an ordinary vector, no requirement for a size.
+/// ```
+/// nova::bytevec!(MyStringType);
+/// ```
 macro_rules! bytevec {
     (pub $name:ident) => {
         $crate::newtype!($crate::alloc::vec::Vec<u8> => pub $name);
@@ -285,9 +330,22 @@ macro_rules! bytevec {
         $crate::newtype!($crate::alloc::vec::Vec<u8> => $name);
     };
 }
-
 #[macro_export]
 #[cfg(feature = "heapless")]
+/// Creates a [`String`][String] newtype. With <span class="stab portability"><code>heapless</code></span>
+/// feature enabled, creates a [`heapless::String<N>`][::heapless::String] newtype.
+///
+/// ## Usage
+///
+/// With [`heapless::String`][::heapless::String], the size needs to be specified.
+/// ```
+/// nova::string!(MyStringType, 128);
+/// ```
+///
+/// With an ordinary string, no requirement for a size.
+/// ```
+/// nova::string!(MyStringType);
+/// ```
 macro_rules! string {
     (@__impl $name:ident, $n:tt) => {
         impl core::ops::Deref for $name {
@@ -321,6 +379,20 @@ macro_rules! string {
 
 #[macro_export]
 #[cfg(all(feature = "alloc", not(feature = "heapless")))]
+/// Creates a [`String`][String] newtype. With <span class="stab portability"><code>heapless</code></span>
+/// feature enabled, creates a [`heapless::String<N>`][::heapless::String] newtype.
+///
+/// ## Usage
+///
+/// With [`heapless::String`][::heapless::String], the size needs to be specified.
+/// ```
+/// nova::string!(MyStringType, 128);
+/// ```
+///
+/// With an ordinary string, no requirement for a size.
+/// ```
+/// nova::string!(MyStringType);
+/// ```
 macro_rules! string {
     (@__impl $name:ident) => {
         impl core::ops::Deref for $name {
