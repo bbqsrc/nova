@@ -17,11 +17,12 @@ then implement a `new` function for creating it. The inner field of the newtype 
 ensures that the type can only be created by methods designed to validate and assert that the type is valid.
 
 ```rust
+// Creates the PhoneNumber newtype here.
 nova::string!(PhoneNumber);
 
 impl PhoneNumber {
     pub fn new(input: String) -> PhoneNumber {
-        // An extremely poorly implementation phone number validator.
+        // An extremely poorly implemented phone number validator.
         assert_eq!(input.len(), 10);
 
         Self(input)
