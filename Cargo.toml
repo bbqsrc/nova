@@ -8,6 +8,12 @@ repository = "https://github.com/bbqsrc/nova"
 
 [dependencies]
 uuid = { version = "0.8", optional = true }
+heapless = { path = "../heapless", version = "0.7.3", optional = true }
 
 [dev-dependencies]
 uuid = { version = "0.8", features = ["serde", "v4"] }
+
+[features]
+default = ["std"]
+std = ["alloc"]
+alloc = []

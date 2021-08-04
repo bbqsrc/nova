@@ -1,7 +1,12 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 #[macro_export]
 macro_rules! newtype {
     (@__impl $ty:path => $name:ident) => {
-        impl std::ops::Deref for $name {
+        impl core::ops::Deref for $name {
             type Target = $ty;
 
             fn deref(&self) -> &Self::Target {
@@ -18,7 +23,7 @@ macro_rules! newtype {
     };
     (@__prefix $($tokens:tt)+) => {
         #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-        #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, std::hash::Hash)]
+        #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
         #[repr(transparent)]
         $($tokens)*;
     };
@@ -39,7 +44,7 @@ macro_rules! newtype {
 #[macro_export]
 macro_rules! newtype_copy {
     (@__impl $ty:path => $name:ident) => {
-        impl std::ops::Deref for $name {
+        impl core::ops::Deref for $name {
             type Target = $ty;
 
             fn deref(&self) -> &Self::Target {
@@ -56,7 +61,7 @@ macro_rules! newtype_copy {
     };
     (@__prefix $($tokens:tt)+) => {
         #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-        #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, std::hash::Hash)]
+        #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
         #[repr(transparent)]
         $($tokens)*;
     };
@@ -245,23 +250,47 @@ macro_rules! isize {
 }
 
 #[macro_export]
+#[cfg(feature = "heapless")]
 macro_rules! bytevec {
-    (pub $name:ident) => {
-        $crate::newtype!(Vec<u8> => pub $name);
+    (pub $name:ident, $n:tt) => {
+        $crate::newtype!(::heapless::Vec<u8, $n> => pub $name);
     };
-    (pub($($vis:tt)+) $name:ident) => {
-        $crate::newtype!(Vec<u8> => pub ($($vis)*) $name);
+    (pub($($vis:tt)+) $name:ident, $n:tt) => {
+        $crate::newtype!(::heapless::Vec<u8, $n> => pub ($($vis)*) $name);
     };
-    ($name:ident) => {
-        $crate::newtype!(Vec<u8> => $name);
+    ($name:ident, $n:tt) => {
+        $crate::newtype!(::heapless::Vec<u8, $n> => $name);
     };
-
 }
 
 #[macro_export]
+#[cfg(all(feature = "alloc", not(feature = "heapless")))]
+macro_rules! bytevec {
+    (pub $name:ident) => {
+        $crate::newtype!(::alloc::vec::Vec<u8> => pub $name);
+    };
+    (pub $name:ident, $n:tt) => {
+        $crate::newtype!(::alloc::vec::Vec<u8> => pub $name);
+    };
+    (pub($($vis:tt)+) $name:ident) => {
+        $crate::newtype!(::alloc::vec::Vec<u8> => pub ($($vis)*) $name);
+    };
+    (pub($($vis:tt)+) $name:ident, $n:tt) => {
+        $crate::newtype!(::alloc::vec::Vec<u8> => pub ($($vis)*) $name);
+    };
+    ($name:ident) => {
+        $crate::newtype!(::alloc::vec::Vec<u8> => $name);
+    };
+    ($name:ident, $n:tt) => {
+        $crate::newtype!(::alloc::vec::Vec<u8> => $name);
+    };
+}
+
+#[macro_export]
+#[cfg(feature = "heapless")]
 macro_rules! string {
-    (@__impl $name:ident) => {
-        impl std::ops::Deref for $name {
+    (@__impl $name:ident, $n:tt) => {
+        impl core::ops::Deref for $name {
             type Target = str;
 
             fn deref(&self) -> &Self::Target {
@@ -271,32 +300,68 @@ macro_rules! string {
 
         impl $name {
             #[allow(dead_code)]
-            pub fn into_inner(self) -> String {
+            pub fn into_inner(self) -> ::heapless::String<$n> {
+                self.0
+            }
+        }
+    };
+    (pub $name:ident, $n:tt) => {
+        $crate::newtype!(@__prefix pub struct $name(::heapless::String<$n>));
+        $crate::string!(@__impl $name, $n);
+    };
+    (pub ($($vis:tt)+) $name:ident, $n:tt) => {
+        $crate::newtype!(@__prefix pub($($vis)+) struct $name(::heapless::String<$n>));
+        $crate::string!(@__impl $name, $n);
+    };
+    ($name:ident, $n:tt) => {
+        $crate::newtype!(@__prefix struct $name(::heapless::String<$n>));
+        $crate::string!(@__impl $name, $n);
+    }
+}
+
+#[macro_export]
+#[cfg(all(feature = "alloc", not(feature = "heapless")))]
+macro_rules! string {
+    (@__impl $name:ident) => {
+        impl core::ops::Deref for $name {
+            type Target = str;
+
+            fn deref(&self) -> &Self::Target {
+                &self.0
+            }
+        }
+
+        impl $name {
+            #[allow(dead_code)]
+            pub fn into_inner(self) -> ::alloc::string::String {
                 self.0
             }
         }
     };
     (pub $name:ident) => {
-        #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-        #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, std::hash::Hash)]
-        #[repr(transparent)]
-        pub struct $name(String);
+        $crate::newtype!(@__prefix pub struct $name(::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     (pub ($($vis:tt)+) $name:ident) => {
-        #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-        #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, std::hash::Hash)]
-        #[repr(transparent)]
-        pub($($vis)+) struct $name(String);
+        $crate::newtype!(@__prefix pub($($vis)+) struct $name(::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     ($name:ident) => {
-        #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-        #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, std::hash::Hash)]
-        #[repr(transparent)]
-        struct $name(String);
+        $crate::newtype!(@__prefix struct $name(::alloc::string::String));
+        $crate::string!(@__impl $name);
+    }
+    (pub $name:ident, $n:tt) => {
+        $crate::newtype!(@__prefix pub struct $name(::alloc::string::String));
         $crate::string!(@__impl $name);
     };
+    (pub ($($vis:tt)+) $name:ident, $n:tt) => {
+        $crate::newtype!(@__prefix pub($($vis)+) struct $name(::alloc::string::String));
+        $crate::string!(@__impl $name);
+    };
+    ($name:ident, $n:tt) => {
+        $crate::newtype!(@__prefix struct $name(::alloc::string::String));
+        $crate::string!(@__impl $name);
+    }
 }
 
 #[cfg(test)]
@@ -304,8 +369,23 @@ mod test {
     use crate as nova;
 
     #[test]
+    #[cfg(feature = "heapless")]
+    fn heapless_bytevec() {
+        nova::bytevec!(TestVec, 40);
+    }
+
+    #[test]
+    #[cfg(all(feature = "alloc", not(feature = "heapless")))]
     fn create_string() {
         nova::string!(pub(crate) QuietScreaming);
+
+        QuietScreaming("wow".into());
+    }
+
+    #[test]
+    #[cfg(feature = "heapless")]
+    fn create_string() {
+        nova::string!(pub(crate) QuietScreaming, 20);
 
         QuietScreaming("wow".into());
     }
@@ -331,8 +411,18 @@ mod test {
         nova::i64!(pub D2);
         nova::i128!(pub E2);
         nova::isize!(pub F2);
+
+        #[cfg(all(feature = "alloc", not(feature = "heapless")))]
         nova::string!(pub G);
+
+        #[cfg(feature = "heapless")]
+        nova::string!(pub G, 42);
+
+        #[cfg(all(feature = "alloc", not(feature = "heapless")))]
         nova::bytevec!(pub(in super) H);
+
+        #[cfg(feature = "heapless")]
+        nova::bytevec!(pub(in super) H, 42);
     }
 
     #[test]
