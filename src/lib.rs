@@ -267,22 +267,22 @@ macro_rules! bytevec {
 #[cfg(all(feature = "alloc", not(feature = "heapless")))]
 macro_rules! bytevec {
     (pub $name:ident) => {
-        $crate::newtype!(::alloc::vec::Vec<u8> => pub $name);
+        $crate::newtype!($crate::alloc::vec::Vec<u8> => pub $name);
     };
     (pub $name:ident, $n:tt) => {
-        $crate::newtype!(::alloc::vec::Vec<u8> => pub $name);
+        $crate::newtype!($crate::alloc::vec::Vec<u8> => pub $name);
     };
     (pub($($vis:tt)+) $name:ident) => {
-        $crate::newtype!(::alloc::vec::Vec<u8> => pub ($($vis)*) $name);
+        $crate::newtype!($crate::alloc::vec::Vec<u8> => pub ($($vis)*) $name);
     };
     (pub($($vis:tt)+) $name:ident, $n:tt) => {
-        $crate::newtype!(::alloc::vec::Vec<u8> => pub ($($vis)*) $name);
+        $crate::newtype!($crate::alloc::vec::Vec<u8> => pub ($($vis)*) $name);
     };
     ($name:ident) => {
-        $crate::newtype!(::alloc::vec::Vec<u8> => $name);
+        $crate::newtype!($crate::alloc::vec::Vec<u8> => $name);
     };
     ($name:ident, $n:tt) => {
-        $crate::newtype!(::alloc::vec::Vec<u8> => $name);
+        $crate::newtype!($crate::alloc::vec::Vec<u8> => $name);
     };
 }
 
@@ -333,33 +333,33 @@ macro_rules! string {
 
         impl $name {
             #[allow(dead_code)]
-            pub fn into_inner(self) -> ::alloc::string::String {
+            pub fn into_inner(self) -> $crate::alloc::string::String {
                 self.0
             }
         }
     };
     (pub $name:ident) => {
-        $crate::newtype!(@__prefix pub struct $name(::alloc::string::String));
+        $crate::newtype!(@__prefix pub struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     (pub ($($vis:tt)+) $name:ident) => {
-        $crate::newtype!(@__prefix pub($($vis)+) struct $name(::alloc::string::String));
+        $crate::newtype!(@__prefix pub($($vis)+) struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     ($name:ident) => {
-        $crate::newtype!(@__prefix struct $name(::alloc::string::String));
+        $crate::newtype!(@__prefix struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
-    }
+    };
     (pub $name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix pub struct $name(::alloc::string::String));
+        $crate::newtype!(@__prefix pub struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     (pub ($($vis:tt)+) $name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix pub($($vis)+) struct $name(::alloc::string::String));
+        $crate::newtype!(@__prefix pub($($vis)+) struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     ($name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix struct $name(::alloc::string::String));
+        $crate::newtype!(@__prefix struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     }
 }
