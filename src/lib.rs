@@ -1,5 +1,7 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(docsrs, deny(rustdoc::broken_intra_doc_links))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "alloc")]
 #[doc(hidden)]
@@ -24,22 +26,23 @@ macro_rules! newtype {
             }
         }
     };
-    (@__prefix $($tokens:tt)+) => {
+    (@__prefix $ty:path => $($tokens:tt)+) => {
         #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+        #[cfg_attr(feature = "serde", serde(try_from = stringify!($ty)))]
         #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
         #[repr(transparent)]
         $($tokens)*;
     };
     ($ty:path => pub $name:ident) => {
-        $crate::newtype!(@__prefix pub struct $name($ty));
+        $crate::newtype!(@__prefix $ty => pub struct $name($ty));
         $crate::newtype!(@__impl $ty => $name);
     };
     ($ty:path => pub ($($vis:tt)+) $name:ident) => {
-        $crate::newtype!(@__prefix pub($($vis)+) struct $name($ty));
+        $crate::newtype!(@__prefix $ty => pub($($vis)+) struct $name($ty));
         $crate::newtype!(@__impl $ty => $name);
     };
     ($ty:path => $name:ident) => {
-        $crate::newtype!(@__prefix struct $name($ty));
+        $crate::newtype!(@__prefix $ty => struct $name($ty));
         $crate::newtype!(@__impl $ty => $name);
     }
 }
@@ -63,27 +66,29 @@ macro_rules! newtype_copy {
             }
         }
     };
-    (@__prefix $($tokens:tt)+) => {
+    (@__prefix $ty:path => $($tokens:tt)+) => {
         #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+        #[cfg_attr(feature = "serde", serde(try_from = stringify!($ty)))]
         #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
         #[repr(transparent)]
         $($tokens)*;
     };
     ($ty:path => pub $name:ident) => {
-        $crate::newtype_copy!(@__prefix pub struct $name($ty));
+        $crate::newtype_copy!(@__prefix $ty => pub struct $name($ty));
         $crate::newtype_copy!(@__impl $ty => $name);
     };
     ($ty:path => pub ($($vis:tt)+) $name:ident) => {
-        $crate::newtype_copy!(@__prefix pub($($vis)+) struct $name($ty));
+        $crate::newtype_copy!(@__prefix $ty => pub($($vis)+) struct $name($ty));
         $crate::newtype_copy!(@__impl $ty => $name);
     };
     ($ty:path => $name:ident) => {
-        $crate::newtype_copy!(@__prefix struct $name($ty));
+        $crate::newtype_copy!(@__prefix $ty => struct $name($ty));
         $crate::newtype_copy!(@__impl $ty => $name);
     }
 }
 
 #[cfg(feature = "uuid")]
+#[cfg_attr(docsrs, doc(cfg(feature = "uuid")))]
 #[macro_export]
 /// Creates a [`uuid::Uuid`][::uuid::Uuid] newtype.
 macro_rules! uuid {
@@ -436,6 +441,7 @@ macro_rules! nonzero_isize {
 
 #[macro_export]
 #[cfg(feature = "heapless")]
+#[cfg_attr(docsrs, doc(cfg(feature = "heapless")))]
 /// Creates a [`Vec<u8>`][Vec] newtype. With <span class="stab portability"><code>heapless</code></span>
 /// feature enabled, creates a [`heapless::Vec<u8, N>`][::heapless::Vec] newtype.
 ///
@@ -500,6 +506,7 @@ macro_rules! bytevec {
 }
 #[macro_export]
 #[cfg(feature = "heapless")]
+#[cfg_attr(docsrs, doc(cfg(feature = "heapless")))]
 /// Creates a [`String`][String] newtype. With <span class="stab portability"><code>heapless</code></span>
 /// feature enabled, creates a [`heapless::String<N>`][::heapless::String] newtype.
 ///
@@ -532,15 +539,15 @@ macro_rules! string {
         }
     };
     (pub $name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix pub struct $name(::heapless::String<$n>));
+        $crate::newtype!(@__prefix ::heapless::String<$n> => pub struct $name(::heapless::String<$n>));
         $crate::string!(@__impl $name, $n);
     };
     (pub ($($vis:tt)+) $name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix pub($($vis)+) struct $name(::heapless::String<$n>));
+        $crate::newtype!(@__prefix ::heapless::String<$n> => pub($($vis)+) struct $name(::heapless::String<$n>));
         $crate::string!(@__impl $name, $n);
     };
     ($name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix struct $name(::heapless::String<$n>));
+        $crate::newtype!(@__prefix ::heapless::String<$n> => struct $name(::heapless::String<$n>));
         $crate::string!(@__impl $name, $n);
     }
 }
@@ -579,27 +586,27 @@ macro_rules! string {
         }
     };
     (pub $name:ident) => {
-        $crate::newtype!(@__prefix pub struct $name($crate::alloc::string::String));
+        $crate::newtype!(@__prefix $crate::alloc::string::String => pub struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     (pub ($($vis:tt)+) $name:ident) => {
-        $crate::newtype!(@__prefix pub($($vis)+) struct $name($crate::alloc::string::String));
+        $crate::newtype!(@__prefix $crate::alloc::string::String => pub($($vis)+) struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     ($name:ident) => {
-        $crate::newtype!(@__prefix struct $name($crate::alloc::string::String));
+        $crate::newtype!(@__prefix $crate::alloc::string::String => struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     (pub $name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix pub struct $name($crate::alloc::string::String));
+        $crate::newtype!(@__prefix $crate::alloc::string::String => pub struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     (pub ($($vis:tt)+) $name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix pub($($vis)+) struct $name($crate::alloc::string::String));
+        $crate::newtype!(@__prefix $crate::alloc::string::String => pub($($vis)+) struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     };
     ($name:ident, $n:tt) => {
-        $crate::newtype!(@__prefix struct $name($crate::alloc::string::String));
+        $crate::newtype!(@__prefix $crate::alloc::string::String => struct $name($crate::alloc::string::String));
         $crate::string!(@__impl $name);
     }
 }
