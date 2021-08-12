@@ -1,23 +1,18 @@
 [package]
 name = "nova"
-description = "Newtype macros for commonly reused types in Rust."
-version = "0.2.3"
+description = "Macro to derive newtypes with support for serde and sqlx."
+version = "0.3.0"
 edition = "2018"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/bbqsrc/nova"
 
 [dependencies]
-uuid = { version = "0.8", optional = true }
-heapless = { version = "0.7.4", optional = true }
-
-[dev-dependencies]
-uuid = { version = "0.8", features = ["serde", "v4"] }
+nova-macro = { version = "=0.3.0", path = "macro" }
 
 [features]
-default = ["std"]
-std = ["alloc"]
-alloc = []
+serde = ["nova-macro/serde"]
 
-[package.metadata.docs.rs]
-features = ["heapless", "uuid"]
-rustdoc-args = ["--cfg", "docsrs"]
+[workspace]
+members = [".", "impl", "macro"]
+default-members = [".", "impl"]
+

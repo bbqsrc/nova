@@ -1,0 +1,16 @@
+[package]
+name = "nova-impl"
+description = "Implementation for nova crate."
+version = "0.3.0"
+edition = "2018"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/bbqsrc/nova"
+
+[dependencies]
+syn = { version = "1", features = ["full", "extra-traits"] }
+quote = "1"
+proc-macro2 = "1"
+darling = "0.13.0"
+
+[features]
+serde = []
