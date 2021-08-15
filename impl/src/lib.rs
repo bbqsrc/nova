@@ -70,12 +70,15 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
     };
 
     let sqlx = if attrs.sqlx {
-        Some(quote! {
+        quote! {
             #[derive(sqlx::Type)]
             #[sqlx(transparent)]
-        })
+        }
     } else {
-        None
+        // sqlx's derive interferes with a repr declaration, so we do it here.
+        quote! {
+            #[repr(transparent)]
+        }
     };
 
     let out = quote! {
@@ -83,7 +86,6 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         #copy
         #serde
         #sqlx
-        #[repr(transparent)]
         #visibility struct #ident(#ty);
 
         impl core::ops::Deref for #ident {
