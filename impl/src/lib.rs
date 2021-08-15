@@ -16,6 +16,8 @@ pub struct Attrs {
     #[darling(default)]
     serde: bool,
     #[darling(default)]
+    sqlx: bool,
+    #[darling(default)]
     borrow: Option<syn::Path>,
     #[darling(default)]
     try_from: Option<syn::LitStr>,
@@ -67,10 +69,20 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         None
     };
 
+    let sqlx = if attrs.sqlx {
+        Some(quote! {
+            #[derive(sqlx::Type)]
+            #[sqlx(transparent)]
+        })
+    } else {
+        None
+    };
+
     let out = quote! {
         #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
         #copy
         #serde
+        #sqlx
         #[repr(transparent)]
         #visibility struct #ident(#ty);
 

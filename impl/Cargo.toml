@@ -14,3 +14,4 @@ darling = "0.13.0"
 
 [features]
 serde = []
+sqlx = []

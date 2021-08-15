@@ -17,3 +17,4 @@ proc-macro2 = "1"
 
 [features]
 serde = ["nova-impl/serde"]
+sqlx = ["nova-impl/sqlx"]

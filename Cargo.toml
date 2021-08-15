@@ -11,6 +11,7 @@ nova-macro = { version = "=0.3.0", path = "macro" }
 
 [features]
 serde = ["nova-macro/serde"]
+sqlx = ["nova-macro/sqlx"]
 
 [workspace]
 members = [".", "impl", "macro"]
