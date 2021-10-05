@@ -14,6 +14,8 @@ pub struct Attrs {
     #[darling(default)]
     copy: bool,
     #[darling(default)]
+    opaque: bool,
+    #[darling(default)]
     serde: bool,
     #[darling(default)]
     sqlx: bool,
@@ -81,27 +83,34 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         }
     };
 
+    let deref = if attrs.opaque {
+        None
+    } else {
+        Some(quote! {
+            impl core::ops::Deref for #ident {
+                type Target = #borrow_ty;
+
+                fn deref(&self) -> &Self::Target {
+                    &self.0
+                }
+            }
+
+            impl #ident {
+                #[allow(dead_code)]
+                pub fn into_inner(self) -> #ty {
+                    self.0
+                }
+            }
+        })
+    };
+
     let out = quote! {
         #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
         #copy
         #serde
         #sqlx
         #visibility struct #ident(#ty);
-
-        impl core::ops::Deref for #ident {
-            type Target = #borrow_ty;
-
-            fn deref(&self) -> &Self::Target {
-                &self.0
-            }
-        }
-
-        impl #ident {
-            #[allow(dead_code)]
-            pub fn into_inner(self) -> #ty {
-                self.0
-            }
-        }
+        #deref
     };
 
     Ok(out)
