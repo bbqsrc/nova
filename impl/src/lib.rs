@@ -104,6 +104,12 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         })
     };
 
+    let trait_impl = quote! {
+        impl ::nova::NewType for #ident {
+            type Inner = #ty;
+        }
+    };
+
     let out = quote! {
         #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
         #copy
@@ -111,6 +117,7 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         #sqlx
         #visibility struct #ident(#ty);
         #deref
+        #trait_impl
     };
 
     Ok(out)
