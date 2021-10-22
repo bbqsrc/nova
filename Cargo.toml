@@ -7,7 +7,7 @@ license = "Apache-2.0 OR MIT"
 repository = "https://github.com/bbqsrc/nova"
 
 [dependencies]
-nova-macro = { version = "=0.3.2", path = "macro" }
+nova-macro = { version = "=0.4.0", path = "macro" }
 
 [workspace]
 members = [".", "impl", "macro"]
