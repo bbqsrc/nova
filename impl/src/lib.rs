@@ -12,6 +12,8 @@ use syn::{
 #[derive(Debug, Default, FromMeta)]
 pub struct Attrs {
     #[darling(default)]
+    new: bool,
+    #[darling(default)]
     copy: bool,
     #[darling(default)]
     opaque: bool,
@@ -114,6 +116,24 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         })
     };
 
+    let new = if attrs.new {
+        Some(quote! {
+            impl #ident {
+                pub fn new(input: #ty) -> Self {
+                    Self(input)
+                }
+            }
+
+            impl From<#ty> for #ident {
+                fn from(x: #ty) -> Self {
+                    Self(x)
+                }
+            }
+        })
+    } else {
+        None
+    };
+
     let trait_impl = quote! {
         impl ::nova::NewType for #ident {
             type Inner = #ty;
@@ -128,6 +148,7 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         #visibility struct #ident(#ty);
         #async_graphql
         #deref
+        #new
         #trait_impl
     };
 
