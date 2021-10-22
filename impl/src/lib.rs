@@ -20,6 +20,8 @@ pub struct Attrs {
     #[darling(default)]
     sqlx: bool,
     #[darling(default)]
+    async_graphql: bool,
+    #[darling(default)]
     borrow: Option<syn::Path>,
     #[darling(default)]
     try_from: Option<syn::LitStr>,
@@ -83,6 +85,14 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         }
     };
 
+    let async_graphql = if attrs.async_graphql {
+        Some(quote! {
+            async_graphql::scalar!(#ident);
+        })
+    } else {
+        None
+    };
+
     let deref = if attrs.opaque {
         None
     } else {
@@ -116,6 +126,7 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         #serde
         #sqlx
         #visibility struct #ident(#ty);
+        #async_graphql
         #deref
         #trait_impl
     };
