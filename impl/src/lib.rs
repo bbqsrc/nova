@@ -1,11 +1,18 @@
 //! This crate implements the macro for `nova` and should not be used directly.
 
+use std::{
+    cmp::Ordering,
+    collections::{BTreeSet, HashSet},
+    iter::FromIterator,
+};
+
 use darling::FromMeta;
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
-    AttributeArgs, Token, TypePath,
+    punctuated::Punctuated,
+    AttributeArgs, GenericArgument, Token, TypePath,
 };
 
 #[doc(hidden)]
@@ -29,6 +36,42 @@ pub struct Attrs {
     try_from: Option<syn::LitStr>,
 }
 
+fn pointy_bits(ty: &syn::Type) -> Punctuated<GenericArgument, Token![,]> {
+    let set = match ty {
+        syn::Type::Path(path) => path
+            .path
+            .segments
+            .iter()
+            .map(|x| match &x.arguments {
+                syn::PathArguments::AngleBracketed(a) => {
+                    a.args.iter().map(|x| x).cloned().collect()
+                }
+                syn::PathArguments::Parenthesized(_) => vec![],
+                syn::PathArguments::None => vec![],
+            })
+            .flatten()
+            .collect::<HashSet<_>>(),
+        _ => Default::default(),
+    };
+
+    let mut vec = set.into_iter().collect::<Vec<_>>();
+    vec.sort_by(|a, b| {
+        if a == b {
+            return Ordering::Equal;
+        }
+
+        match (a, b) {
+            (GenericArgument::Lifetime(_), _) => Ordering::Greater,
+            (GenericArgument::Type(_), GenericArgument::Lifetime(_)) => Ordering::Less,
+            (GenericArgument::Type(_), GenericArgument::Const(_)) => Ordering::Greater,
+            (GenericArgument::Const(_), _) => Ordering::Less,
+            _ => Ordering::Less,
+        }
+    });
+
+    Punctuated::from_iter(vec.into_iter())
+}
+
 #[doc(hidden)]
 #[derive(Debug, Default, FromMeta)]
 pub struct SerdeAttrs {
@@ -39,15 +82,15 @@ pub struct SerdeAttrs {
 fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
     let Item {
         visibility,
-        ident,
-        ty,
+        new_ty,
+        wrapped_ty,
     } = item;
 
     let borrow_ty = attrs
         .borrow
         .take()
         .map(|path| syn::Type::Path(TypePath { qself: None, path }))
-        .unwrap_or_else(|| ty.clone());
+        .unwrap_or_else(|| wrapped_ty.clone());
 
     let copy = if attrs.copy {
         Some(quote! {
@@ -76,9 +119,29 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
     };
 
     let sqlx = if attrs.sqlx {
+        let segments = match &wrapped_ty {
+            syn::Type::Path(p) => &p.path.segments,
+            _ => panic!("Ahhhh"),
+        };
+
+        let sql_type_literal = match &*segments.last().unwrap().ident.to_string() {
+            "u128" | "i128" | "Uuid" => "UUID",
+            "u64" | "i64" => "INT8",
+            "u32" | "i32" => "INT4",
+            "u16" | "i16" | "u8" | "i8" => "INT2",
+            "bool" => "BOOL",
+            _ => "",
+        };
+
+        let sql_type_literal = if sql_type_literal != "" {
+            quote! { #[sqlx(transparent, type_name = #sql_type_literal)] }
+        } else {
+            quote! { #[sqlx(transparent)] }
+        };
+
         quote! {
             #[derive(sqlx::Type)]
-            #[sqlx(transparent)]
+            #sql_type_literal
         }
     } else {
         // sqlx's derive interferes with a repr declaration, so we do it here.
@@ -89,17 +152,20 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
 
     let async_graphql = if attrs.async_graphql {
         Some(quote! {
-            async_graphql::scalar!(#ident);
+            async_graphql::scalar!(#new_ty);
         })
     } else {
         None
     };
 
+    let pointy_bits = pointy_bits(&new_ty);
+    let pointy = quote!( < #pointy_bits > );
+
     let deref = if attrs.opaque {
         None
     } else {
         Some(quote! {
-            impl core::ops::Deref for #ident {
+            impl #pointy core::ops::Deref for #new_ty {
                 type Target = #borrow_ty;
 
                 fn deref(&self) -> &Self::Target {
@@ -107,9 +173,9 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
                 }
             }
 
-            impl #ident {
+            impl #pointy #new_ty {
                 #[allow(dead_code)]
-                pub fn into_inner(self) -> #ty {
+                pub fn into_inner(self) -> #wrapped_ty {
                     self.0
                 }
             }
@@ -118,14 +184,14 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
 
     let new = if attrs.new {
         Some(quote! {
-            impl #ident {
-                pub fn new(input: #ty) -> Self {
+            impl #new_ty {
+                pub fn new(input: #wrapped_ty) -> Self {
                     Self(input)
                 }
             }
 
-            impl From<#ty> for #ident {
-                fn from(x: #ty) -> Self {
+            impl From<#wrapped_ty> for #new_ty {
+                fn from(x: #wrapped_ty) -> Self {
                     Self(x)
                 }
             }
@@ -135,8 +201,8 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
     };
 
     let trait_impl = quote! {
-        impl ::nova::NewType for #ident {
-            type Inner = #ty;
+        impl #pointy ::nova::NewType for #new_ty {
+            type Inner = #wrapped_ty;
         }
     };
 
@@ -145,7 +211,7 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         #copy
         #serde
         #sqlx
-        #visibility struct #ident(#ty);
+        #visibility struct #new_ty(#wrapped_ty);
         #async_graphql
         #deref
         #new
@@ -172,8 +238,8 @@ pub fn newtype(attrs: AttributeArgs, item: TokenStream) -> Result<TokenStream, s
 #[derive(Debug)]
 struct Item {
     visibility: syn::Visibility,
-    ident: syn::Ident,
-    ty: syn::Type,
+    new_ty: syn::Type,
+    wrapped_ty: syn::Type,
 }
 
 impl Parse for Item {
@@ -189,17 +255,17 @@ impl Parse for Item {
 
         let _: Token![type] = input.parse()?;
 
-        let ident: Ident = input.parse()?;
+        let new_ty: syn::Type = input.parse()?;
         let _: Token![=] = input.parse()?;
-        let ty: syn::Type = input.parse()?;
+        let wrapped_ty: syn::Type = input.parse()?;
         let _: Token![;] = input.parse()?;
 
         // println!("{:?}", input.cursor().token_stream().to_string());
 
         Ok(Item {
             visibility,
-            ty,
-            ident,
+            new_ty,
+            wrapped_ty,
         })
     }
 }
@@ -216,6 +282,7 @@ mod tests {
                 vec![syn::parse_quote!(copy)],
                 quote! { pub(crate) type Hello = u8; }
             )
+            .unwrap()
         );
 
         println!(
@@ -224,6 +291,16 @@ mod tests {
                 vec![syn::parse_quote!(copy)],
                 quote! { pub(in super) type SpecialUuid = uuid::Uuid; }
             )
+            .unwrap()
+        );
+
+        println!(
+            "{:?}",
+            newtype(
+                vec![syn::parse_quote!(copy)],
+                quote! { pub(in super) type S<'a> = std::borrow::Cow<'a, str>; }
+            )
+            .unwrap()
         );
     }
 }
