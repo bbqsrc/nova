@@ -2,12 +2,12 @@
 
 use std::{
     cmp::Ordering,
-    collections::{BTreeSet, HashSet},
+    collections::HashSet,
     iter::FromIterator,
 };
 
 use darling::FromMeta;
-use proc_macro2::{Ident, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
