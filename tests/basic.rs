@@ -22,7 +22,7 @@ fn ahhh2() {
 
 #[test]
 fn ahhh3() {
-    #[newtype(borrow = "str")]
+    #[newtype(new, borrow = "str")]
     pub type Hello<'a> = Cow<'a, str>;
 
     let wow = Hello("wew lad".into());

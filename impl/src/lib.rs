@@ -184,13 +184,13 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
 
     let new = if attrs.new {
         Some(quote! {
-            impl #new_ty {
+            impl #pointy #new_ty {
                 pub fn new(input: #wrapped_ty) -> Self {
                     Self(input)
                 }
             }
 
-            impl From<#wrapped_ty> for #new_ty {
+            impl #pointy From<#wrapped_ty> for #new_ty {
                 fn from(x: #wrapped_ty) -> Self {
                     Self(x)
                 }
@@ -297,7 +297,7 @@ mod tests {
         println!(
             "{:?}",
             newtype(
-                vec![syn::parse_quote!(copy)],
+                vec![syn::parse_quote!(new), syn::parse_quote!(borrow = "str")],
                 quote! { pub(in super) type S<'a> = std::borrow::Cow<'a, str>; }
             )
             .unwrap()
