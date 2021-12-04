@@ -34,6 +34,8 @@ pub struct Attrs {
     borrow: Option<syn::Path>,
     #[darling(default)]
     try_from: Option<syn::LitStr>,
+    #[darling(default)]
+    display: bool,
 }
 
 fn pointy_bits(ty: &syn::Type) -> Punctuated<GenericArgument, Token![,]> {
@@ -206,6 +208,18 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         }
     };
 
+    let display = if attrs.display {
+        Some(quote! {
+            impl #pointy core::fmt::Display for #new_ty {
+                fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+                    core::fmt::Display::fmt(&self.0, f)
+                }
+            }
+        })
+    } else {
+        None
+    };
+
     let out = quote! {
         #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
         #copy
@@ -216,6 +230,7 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         #deref
         #new
         #trait_impl
+        #display
     };
 
     Ok(out)
