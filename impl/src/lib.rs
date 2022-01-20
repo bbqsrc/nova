@@ -1,10 +1,6 @@
 //! This crate implements the macro for `nova` and should not be used directly.
 
-use std::{
-    cmp::Ordering,
-    collections::HashSet,
-    iter::FromIterator,
-};
+use std::{cmp::Ordering, collections::HashSet, iter::FromIterator};
 
 use darling::FromMeta;
 use proc_macro2::TokenStream;
@@ -185,9 +181,14 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
     };
 
     let new = if attrs.new {
+        let consty = if attrs.copy {
+            Some(quote! { const })
+        } else {
+            None
+        };
         Some(quote! {
             impl #pointy #new_ty {
-                pub fn new(input: #wrapped_ty) -> Self {
+                pub #consty fn new(input: #wrapped_ty) -> Self {
                     Self(input)
                 }
             }
