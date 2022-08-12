@@ -1,8 +1,10 @@
 //! This crate implements the macro for `nova` and should not be used directly.
 
 use std::{cmp::Ordering, collections::HashSet, iter::FromIterator};
+use std::ops::Deref;
 
 use darling::FromMeta;
+use darling::util::PathList;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{
@@ -32,6 +34,9 @@ pub struct Attrs {
     try_from: Option<syn::LitStr>,
     #[darling(default)]
     display: bool,
+
+    #[darling(default)]
+    custom_derives: Option<PathList>,
 }
 
 fn pointy_bits(ty: &syn::Type) -> Punctuated<GenericArgument, Token![,]> {
@@ -221,8 +226,14 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         None
     };
 
+    let derives = if let Some(custom_derives) = attrs.custom_derives {
+        let paths = custom_derives.deref().clone();
+        quote! { #[derive( #(#paths),*)]}
+    } else {
+        quote! { #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]}
+    };
     let out = quote! {
-        #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]
+        #derives
         #copy
         #serde
         #sqlx
@@ -296,27 +307,27 @@ mod tests {
             "{:?}",
             newtype(
                 vec![syn::parse_quote!(copy)],
-                quote! { pub(crate) type Hello = u8; }
+                quote! { pub(crate) type Hello = u8; },
             )
-            .unwrap()
+                .unwrap()
         );
 
         println!(
             "{:?}",
             newtype(
                 vec![syn::parse_quote!(copy)],
-                quote! { pub(in super) type SpecialUuid = uuid::Uuid; }
+                quote! { pub(in super) type SpecialUuid = uuid::Uuid; },
             )
-            .unwrap()
+                .unwrap()
         );
 
         println!(
             "{:?}",
             newtype(
                 vec![syn::parse_quote!(new), syn::parse_quote!(borrow = "str")],
-                quote! { pub(in super) type S<'a> = std::borrow::Cow<'a, str>; }
+                quote! { pub(in super) type S<'a> = std::borrow::Cow<'a, str>; },
             )
-            .unwrap()
+                .unwrap()
         );
     }
 }
