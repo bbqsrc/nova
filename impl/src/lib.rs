@@ -36,7 +36,7 @@ pub struct Attrs {
     display: bool,
 
     #[darling(default)]
-    custom_derives: Option<PathList>,
+    derive: Option<PathList>,
 }
 
 fn pointy_bits(ty: &syn::Type) -> Punctuated<GenericArgument, Token![,]> {
@@ -226,7 +226,7 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
         None
     };
 
-    let derives = if let Some(custom_derives) = attrs.custom_derives {
+    let derives = if let Some(custom_derives) = attrs.derive {
         let paths = custom_derives.deref().clone();
         quote! { #[derive( #(#paths),*)]}
     } else {
