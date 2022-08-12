@@ -34,7 +34,7 @@ fn ahhh3() {
 fn ahhh4() {
     struct DeriveNothing {}
 
-    #[newtype(custom_derives())]
+    #[newtype(derive())]
     type Hello = DeriveNothing;
 
     assert!(true);// if it builds it works
@@ -45,7 +45,7 @@ fn ahhh5() {
     #[derive(Debug,Copy,Clone)]
     struct DebugCopyClone(u32);
 
-    #[newtype(custom_derives(Debug,Copy,Clone))]
+    #[newtype(derive(Debug,Copy,Clone))]
     type Hello = DebugCopyClone;
 
     assert_eq!("DebugCopyClone(42)", &format!("{:?}", DebugCopyClone(42)));
