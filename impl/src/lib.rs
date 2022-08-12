@@ -1,10 +1,10 @@
 //! This crate implements the macro for `nova` and should not be used directly.
 
-use std::{cmp::Ordering, collections::HashSet, iter::FromIterator};
 use std::ops::Deref;
+use std::{cmp::Ordering, collections::HashSet, iter::FromIterator};
 
-use darling::FromMeta;
 use darling::util::PathList;
+use darling::FromMeta;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{
@@ -78,6 +78,7 @@ fn pointy_bits(ty: &syn::Type) -> Punctuated<GenericArgument, Token![,]> {
 #[doc(hidden)]
 #[derive(Debug, Default, FromMeta)]
 pub struct SerdeAttrs {
+    #[allow(dead_code)]
     #[darling(default, rename = "crate")]
     crate_: Option<syn::Path>,
 }
@@ -309,7 +310,7 @@ mod tests {
                 vec![syn::parse_quote!(copy)],
                 quote! { pub(crate) type Hello = u8; },
             )
-                .unwrap()
+            .unwrap()
         );
 
         println!(
@@ -318,7 +319,7 @@ mod tests {
                 vec![syn::parse_quote!(copy)],
                 quote! { pub(in super) type SpecialUuid = uuid::Uuid; },
             )
-                .unwrap()
+            .unwrap()
         );
 
         println!(
@@ -327,7 +328,7 @@ mod tests {
                 vec![syn::parse_quote!(new), syn::parse_quote!(borrow = "str")],
                 quote! { pub(in super) type S<'a> = std::borrow::Cow<'a, str>; },
             )
-                .unwrap()
+            .unwrap()
         );
     }
 }

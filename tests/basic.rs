@@ -37,15 +37,15 @@ fn ahhh4() {
     #[newtype(derive())]
     type Hello = DeriveNothing;
 
-    assert!(true);// if it builds it works
+    assert!(true); // if it builds it works
 }
 
 #[test]
 fn ahhh5() {
-    #[derive(Debug,Copy,Clone)]
+    #[derive(Debug, Copy, Clone)]
     struct DebugCopyClone(u32);
 
-    #[newtype(derive(Debug,Copy,Clone))]
+    #[newtype(derive(Debug, Copy, Clone))]
     type Hello = DebugCopyClone;
 
     assert_eq!("DebugCopyClone(42)", &format!("{:?}", DebugCopyClone(42)));
@@ -56,7 +56,4 @@ fn ahhh5() {
     let goodbye = hello;
     assert_eq!("Hello(DebugCopyClone(42))", &format!("{:?}", hello));
     assert_eq!("Hello(DebugCopyClone(42))", &format!("{:?}", goodbye));
-
-
-
 }

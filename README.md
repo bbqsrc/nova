@@ -49,6 +49,7 @@ fn example() {
 - **opaque**: disables generating a `Deref` and `into_inner` functions to create an opaque type.
 - **borrow = "&lt;type&gt;"**: sets the type to be used for the `Deref` implementation, if needed.
 - **new**: create default construction `new` function and `From` implementation.
+- **derive(...)**: replace the default derives for the newtype with the provided list. Same syntax as the normal `#[derive(...)]` attribute.
 
 ## License
 
