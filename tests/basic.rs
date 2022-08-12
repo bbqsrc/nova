@@ -42,12 +42,21 @@ fn ahhh4() {
 
 #[test]
 fn ahhh5() {
-    #[derive(Debug)]
-    struct JustDebug(u32);
+    #[derive(Debug,Copy,Clone)]
+    struct DebugCopyClone(u32);
 
-    #[newtype(custom_derives(Debug))]
-    type Hello = JustDebug;
+    #[newtype(custom_derives(Debug,Copy,Clone))]
+    type Hello = DebugCopyClone;
 
-    assert_eq!("JustDebug(42)", &format!("{:?}", JustDebug(42)));
-    assert_eq!("Hello(JustDebug(42))", &format!("{:?}", Hello(JustDebug(42))));
+    assert_eq!("DebugCopyClone(42)", &format!("{:?}", DebugCopyClone(42)));
+
+    let hello = Hello(DebugCopyClone(42));
+    assert_eq!("Hello(DebugCopyClone(42))", &format!("{:?}", hello));
+
+    let goodbye = hello;
+    assert_eq!("Hello(DebugCopyClone(42))", &format!("{:?}", hello));
+    assert_eq!("Hello(DebugCopyClone(42))", &format!("{:?}", goodbye));
+
+
+
 }
