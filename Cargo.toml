@@ -1,13 +1,13 @@
 [package]
 name = "nova"
 description = "Macro to derive newtypes with support for serde and sqlx."
-version = "0.5.2"
+version = "0.5.4"
 edition = "2018"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/bbqsrc/nova"
 
 [dependencies]
-nova-macro = { version = "=0.5.2", path = "macro" }
+nova-macro = { version = "=0.5.4", path = "macro" }
 
 [workspace]
 members = [".", "impl", "macro"]
