@@ -29,3 +29,25 @@ fn ahhh3() {
     assert_eq!(wow.deref(), "wew lad");
     assert_eq!(wow.into_inner(), "wew lad");
 }
+
+#[test]
+fn ahhh4() {
+    struct DeriveNothing {}
+
+    #[newtype(custom_derives())]
+    type Hello = DeriveNothing;
+
+    assert!(true);// if it builds it works
+}
+
+#[test]
+fn ahhh5() {
+    #[derive(Debug)]
+    struct JustDebug(u32);
+
+    #[newtype(custom_derives(Debug))]
+    type Hello = JustDebug;
+
+    assert_eq!("JustDebug(42)", &format!("{:?}", JustDebug(42)));
+    assert_eq!("Hello(JustDebug(42))", &format!("{:?}", Hello(JustDebug(42))));
+}
