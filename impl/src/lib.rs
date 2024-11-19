@@ -230,7 +230,7 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
 
     let derives = if let Some(custom_derives) = attrs.derive {
         let paths = custom_derives.deref().clone();
-        quote! { #[derive( #(#paths),*)]}
+        quote! { #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash, #(#paths),*)]}
     } else {
         quote! { #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, core::hash::Hash)]}
     };
