@@ -3,6 +3,7 @@
 use std::ops::Deref;
 use std::{cmp::Ordering, collections::HashSet, iter::FromIterator};
 
+use darling::ast::NestedMeta;
 use darling::util::PathList;
 use darling::FromMeta;
 use proc_macro2::TokenStream;
@@ -10,7 +11,7 @@ use quote::quote;
 use syn::{
     parse::{Parse, ParseStream},
     punctuated::Punctuated,
-    AttributeArgs, GenericArgument, Token, TypePath,
+    GenericArgument, Token, TypePath,
 };
 
 #[doc(hidden)]
@@ -250,8 +251,8 @@ fn do_newtype(mut attrs: Attrs, item: Item) -> Result<TokenStream, syn::Error> {
 }
 
 #[doc(hidden)]
-pub fn newtype(attrs: AttributeArgs, item: TokenStream) -> Result<TokenStream, syn::Error> {
-    let attrs = match Attrs::from_list(&attrs) {
+pub fn newtype(attrs: &[NestedMeta], item: TokenStream) -> Result<TokenStream, syn::Error> {
+    let attrs = match Attrs::from_list(attrs) {
         Ok(v) => v,
         Err(e) => {
             return Ok(TokenStream::from(e.write_errors()));
@@ -307,7 +308,7 @@ mod tests {
         println!(
             "{:?}",
             newtype(
-                vec![syn::parse_quote!(copy)],
+                &vec![syn::parse_quote!(copy)],
                 quote! { pub(crate) type Hello = u8; },
             )
             .unwrap()
@@ -316,7 +317,7 @@ mod tests {
         println!(
             "{:?}",
             newtype(
-                vec![syn::parse_quote!(copy)],
+                &vec![syn::parse_quote!(copy)],
                 quote! { pub(in super) type SpecialUuid = uuid::Uuid; },
             )
             .unwrap()
@@ -325,7 +326,7 @@ mod tests {
         println!(
             "{:?}",
             newtype(
-                vec![syn::parse_quote!(new), syn::parse_quote!(borrow = "str")],
+                &vec![syn::parse_quote!(new), syn::parse_quote!(borrow = "str")],
                 quote! { pub(in super) type S<'a> = std::borrow::Cow<'a, str>; },
             )
             .unwrap()

@@ -2,7 +2,7 @@
 name = "nova-macro"
 description = "Implementation for nova crate."
 version = "0.5.4"
-edition = "2018"
+edition = "2021"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/bbqsrc/nova"
 
@@ -11,6 +11,8 @@ proc-macro = true
 
 [dependencies]
 nova-impl = { version = "=0.5.4", path = "../impl" }
-syn = { version = "1", features = ["full", "extra-traits"] }
-quote = "1"
-proc-macro2 = "1"
+
+syn.workspace = true
+quote.workspace = true
+proc-macro2.workspace = true
+darling.workspace = true
